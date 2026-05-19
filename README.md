@@ -11,8 +11,108 @@ hospedada em modelo *self-hosted*.
 
 ---
 
+## Início rápido
+
+> Siga os passos abaixo para rodar a API e testar todos os endpoints em
+> menos de dois minutos.
+
+### 1. Pré-requisitos
+
+| Opção | Requisito |
+|-------|-----------|
+| Docker (recomendado) | Docker Engine + Docker Compose |
+| Local | Node.js 20 LTS |
+
+### 2. Subir a API
+
+**Com Docker:**
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+**Localmente:**
+
+```bash
+cp .env.example .env
+npm install
+npm run db:migrate
+npm run dev
+```
+
+A API sobe em **http://localhost:3000**.
+
+### 3. Documentação interativa (Swagger UI)
+
+Abra **http://localhost:3000/api-docs** no navegador.
+
+Todos os endpoints estão documentados com exemplos de corpo de requisição,
+parâmetros e respostas possíveis.
+
+### 4. Autenticar e testar
+
+**Opção A — seed automático** (mais rápido):
+
+```bash
+npm run db:seed
+```
+
+Isso cria um gestor e um usuário de exemplo. Use as credenciais abaixo
+diretamente no Swagger UI:
+
+| Perfil | Identificador | Senha |
+|--------|--------------|-------|
+| MANAGER | `manager@biblioflow.com` | `secret123` |
+| USER | CPF `12345678901` | `secret123` |
+
+**Opção B — cadastro manual no Swagger UI:**
+
+1. Expanda `POST /auth/register` → clique em **Try it out**.
+2. Envie o corpo abaixo para criar um MANAGER:
+   ```json
+   {
+     "role": "MANAGER",
+     "fullName": "Gestor Teste",
+     "phone": "11999999999",
+     "email": "gestor@teste.com",
+     "password": "secret123"
+   }
+   ```
+3. Expanda `POST /auth/login` e faça login com o e-mail e senha acima.
+4. Copie o `token` da resposta.
+
+### 5. Usar o token no Swagger UI
+
+1. Clique em **Authorize** (ícone 🔒 no topo da página).
+2. Cole o token no campo **Value** (sem `Bearer `, apenas o token).
+3. Clique em **Authorize** → **Close**.
+
+A partir daqui todos os endpoints protegidos ficam liberados. Teste a
+sequência sugerida:
+
+```
+POST /books          → cadastrar um livro
+GET  /books          → listar o acervo
+POST /auth/register  → cadastrar um USER (com CPF)
+POST /rentals        → criar uma locação
+PATCH /rentals/{id}/finalize → devolver o livro
+GET  /rentals/pending        → ver devoluções em atraso
+POST /donations      → registrar uma doação
+```
+
+### 6. Rodar os testes automatizados
+
+```bash
+npm test
+# 22 testes de integração — deve finalizar com 22 passed
+```
+
+---
+
 ## Sumário
 
+- [Início rápido](#início-rápido)
 - [Visão geral](#visão-geral)
 - [Stack técnica](#stack-técnica)
 - [Domínio e regras de negócio](#domínio-e-regras-de-negócio)
