@@ -17,7 +17,7 @@ export const bookController = {
     try {
       const parsed = bookSearchSchema.safeParse(req.query);
       if (!parsed.success) {
-        res.status(400).json({ erro: 'Parâmetros inválidos', detalhes: parsed.error.errors });
+        res.status(400).json({ erro: 'Parâmetros inválidos', detalhes: parsed.error.issues });
         return;
       }
       const result = await bookService.search(parsed.data);
@@ -29,7 +29,7 @@ export const bookController = {
 
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const book = await bookService.getById(req.params.id);
+      const book = await bookService.getById(String(req.params.id));
       res.json(book);
     } catch (err) {
       next(err);
@@ -47,7 +47,7 @@ export const bookController = {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const book = await bookService.update(req.params.id, req.body);
+      const book = await bookService.update(String(req.params.id), req.body);
       res.json(book);
     } catch (err) {
       next(err);
@@ -56,7 +56,7 @@ export const bookController = {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await bookService.delete(req.params.id);
+      await bookService.delete(String(req.params.id));
       res.status(204).send();
     } catch (err) {
       next(err);

@@ -8,7 +8,7 @@ export const rentalController = {
     try {
       const parsed = listRentalsSchema.safeParse(req.query);
       if (!parsed.success) {
-        res.status(400).json({ erro: 'Parâmetros inválidos', detalhes: parsed.error.errors });
+        res.status(400).json({ erro: 'Parâmetros inválidos', detalhes: parsed.error.issues });
         return;
       }
       const result = await rentalService.list({
@@ -23,7 +23,7 @@ export const rentalController = {
 
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const rental = await rentalService.getById(req.params.id);
+      const rental = await rentalService.getById(String(req.params.id));
       res.json(rental);
     } catch (err) {
       next(err);
@@ -51,7 +51,7 @@ export const rentalController = {
 
   async finalize(req: Request, res: Response, next: NextFunction) {
     try {
-      const rental = await rentalService.finalize(req.params.id);
+      const rental = await rentalService.finalize(String(req.params.id));
       res.json(rental);
     } catch (err) {
       next(err);
