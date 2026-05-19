@@ -1,0 +1,19 @@
+import express from 'express';
+import { errorHandler } from './middlewares/errorHandler';
+import { authRouter } from './routes/auth';
+import { booksRouter } from './routes/books';
+import { rentalsRouter } from './routes/rentals';
+import { donationsRouter } from './routes/donations';
+
+const app = express();
+
+app.use(express.json());
+
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/books', booksRouter);
+app.use('/api/v1/rentals', rentalsRouter);
+app.use('/api/v1/donations', donationsRouter);
+
+app.use(errorHandler);
+
+export { app };
