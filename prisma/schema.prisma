@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  MANAGER
+  USER
+}
+
+enum RentalStatus {
+  ACTIVE
+  FINALIZED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  role         Role     @default(USER)
+  fullName     String
+  phone        String
+  cpf          String?  @unique
+  email        String?  @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  rentals   Rental[]
+  donations Donation[]
+
+  @@map("users")
+}
+
+model Book {
+  id             String   @id @default(uuid())
+  registrationCode String @unique
+  title          String
+  description    String
+  author         String
+  quantity       Int      @default(1)
+  createdAt      DateTime @default(now())
+
+  rentals   Rental[]
+  donations Donation[]
+
+  @@map("books")
+}
+
+model Rental {
+  id           String       @id @default(uuid())
+  bookId       String
+  userId       String
+  periodDays   Int
+  startDate    DateTime     @default(now())
+  dueDate      DateTime
+  returnDate   DateTime?
+  status       RentalStatus @default(ACTIVE)
+  late         Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+
+  book Book @relation(fields: [bookId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("rentals")
+}
+
+model Donation {
+  id        String   @id @default(uuid())
+  bookId    String?
+  userId    String
+  title     String
+  author    String
+  createdAt DateTime @default(now())
+
+  book Book? @relation(fields: [bookId], references: [id])
+  user User  @relation(fields: [userId], references: [id])
+
+  @@map("donations")
+}
