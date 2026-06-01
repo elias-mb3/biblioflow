@@ -1,0 +1,38 @@
+@if (loading()) {
+  <app-spinner label="Carregando livro…" />
+} @else if (book(); as b) {
+  <a class="btn btn--ghost" routerLink="/usuario/catalogo">← Voltar ao catálogo</a>
+
+  <div class="section-card mt-4">
+    <div class="livro-head">
+      <h1>{{ b.title }}</h1>
+      <p class="text-muted">por <strong>{{ b.author }}</strong></p>
+      <div class="mt-2">
+        <span class="badge badge--code">{{ b.registrationCode }}</span>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <h3 class="section-title">Descrição</h3>
+    <p class="description">{{ b.description }}</p>
+
+    <hr class="divider" />
+
+    <div class="info-grid">
+      <div>
+        <div class="info-label">Disponibilidade</div>
+        <div><strong>{{ b.quantity }}</strong> exemplar(es) no acervo</div>
+      </div>
+      <div>
+        <div class="info-label">Cadastrado em</div>
+        <div>{{ b.createdAt | date: 'dd/MM/yyyy' }}</div>
+      </div>
+    </div>
+
+    <div class="banner banner--info mt-6">
+      Interessado em emprestar? Procure o gestor da biblioteca apresentando o código
+      <strong>{{ b.registrationCode }}</strong>.
+    </div>
+  </div>
+}

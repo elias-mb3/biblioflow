@@ -1,0 +1,89 @@
+<div class="page-header">
+  <div>
+    <h1>Locações</h1>
+    <p>
+      {{ rentals().length }} locação(ões) ·
+      <span class="text-muted">{{ activeCount() }} ativa(s), {{ finalizedCount() }} finalizada(s)</span>
+    </p>
+  </div>
+  <a class="btn btn--primary" routerLink="/admin/locacoes/nova">+ Nova locação</a>
+</div>
+
+<div class="table-toolbar">
+  <div class="filter-group">
+    <label>Filtrar por status:</label>
+    <select class="form-control" [ngModel]="filter()" (ngModelChange)="onFilterChange($event)">
+      <option value="ALL">Todas</option>
+      <option value="ACTIVE">Ativas</option>
+      <option value="FINALIZED">Finalizadas</option>
+    </select>
+  </div>
+  @if (lateCount() > 0) {
+    <a class="btn btn--danger btn--sm" routerLink="/admin/locacoes/pendentes">
+      ⚠ {{ lateCount() }} pendente(s)
+    </a>
+  }
+</div>
+
+@if (loading()) {
+  <app-spinner label="Carregando locações…" />
+} @else if (rentals().length === 0) {
+  <div class="section-card">
+    <app-empty-state
+      icon="↻"
+      title="Nenhuma locação encontrada"
+      [message]="filter() === 'ALL' ? 'Crie a primeira locação do acervo.' : 'Não há locações nesse status.'"
+    >
+      <a class="btn btn--primary mt-4" routerLink="/admin/locacoes/nova">+ Nova locação</a>
+    </app-empty-state>
+  </div>
+} @else {
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Livro</th>
+          <th>Usuário</th>
+          <th>Período</th>
+          <th>Prevista p/</th>
+          <th>Status</th>
+          <th class="col-actions">Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of rentals(); track r.id) {
+          <tr [class.row-late]="r.late">
+            <td>
+              <strong>{{ r.book?.title ?? r.bookId }}</strong>
+              @if (r.book) {
+                <div class="text-muted" style="font-size: var(--text-xs);">
+                  {{ r.book.registrationCode }}
+                </div>
+              }
+            </td>
+            <td>{{ r.user?.fullName ?? r.userId }}</td>
+            <td>{{ r.periodDays }} dias</td>
+            <td>
+              {{ r.dueDate | date: 'dd/MM/yyyy' }}
+              @if (r.late) {
+                <span class="badge badge--late" style="margin-left: .5rem;">Atrasada</span>
+              }
+            </td>
+            <td>
+              @if (r.status === 'ACTIVE') {
+                <span class="badge badge--active">Ativa</span>
+              } @else {
+                <span class="badge badge--finalized">Finalizada</span>
+              }
+            </td>
+            <td class="col-actions">
+              <a class="btn btn--secondary btn--sm" [routerLink]="['/admin/locacoes', r.id]">
+                Detalhes
+              </a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

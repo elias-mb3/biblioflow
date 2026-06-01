@@ -1,0 +1,48 @@
+<div class="page-header">
+  <div>
+    <h1>Visão geral</h1>
+    <p>Resumo do acervo e das locações em andamento.</p>
+  </div>
+  <button class="btn btn--secondary" type="button" (click)="load()" [disabled]="loading()">
+    Atualizar
+  </button>
+</div>
+
+<app-spinner *ngIf="loading()" label="Carregando estatísticas…" />
+
+<ng-container *ngIf="!loading() && stats() as s">
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="label">Exemplares cadastrados</div>
+      <div class="value">{{ s.totalBooks }}</div>
+      <div class="description">Total de livros no acervo</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="label">Locações ativas</div>
+      <div class="value">{{ s.activeRentals }}</div>
+      <div class="description">Empréstimos em andamento</div>
+    </div>
+
+    <div class="stat-card" [class.stat-card--danger]="s.pendingRentals > 0">
+      <div class="label">Devoluções pendentes</div>
+      <div class="value">{{ s.pendingRentals }}</div>
+      <div class="description">
+        {{ s.pendingRentals > 0 ? 'Requer atenção do gestor' : 'Nenhum atraso registrado' }}
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h3 style="margin-bottom: var(--space-2);">Próximos passos</h3>
+    <p class="text-muted" style="margin-bottom: var(--space-4);">
+      Atalhos para as ações mais comuns do gestor.
+    </p>
+    <div class="actions">
+      <a class="btn btn--primary" routerLink="/admin/exemplares/novo">+ Cadastrar exemplar</a>
+      <a class="btn btn--secondary" routerLink="/admin/exemplares">Listar exemplares</a>
+      <a class="btn btn--secondary" routerLink="/admin/locacoes/nova">+ Nova locação</a>
+      <a class="btn btn--secondary" routerLink="/admin/locacoes/pendentes">Ver pendências</a>
+    </div>
+  </div>
+</ng-container>

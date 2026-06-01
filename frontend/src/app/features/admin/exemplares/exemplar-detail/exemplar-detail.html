@@ -1,0 +1,62 @@
+@if (loading()) {
+  <app-spinner label="Carregando exemplar…" />
+} @else if (book(); as b) {
+  <div class="page-header">
+    <div>
+      <h1>{{ b.title }}</h1>
+      <p>por <strong>{{ b.author }}</strong></p>
+    </div>
+    <div class="header-actions">
+      <a class="btn btn--ghost" routerLink="/admin/exemplares">← Voltar</a>
+      <a class="btn btn--secondary" [routerLink]="['/admin/exemplares', b.id, 'editar']">
+        Editar
+      </a>
+      <button class="btn btn--danger" type="button" (click)="confirmingDelete.set(true)">
+        Excluir
+      </button>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Código de registro</div>
+        <div class="info-value">
+          <span class="badge badge--code">{{ b.registrationCode }}</span>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Quantidade em estoque</div>
+        <div class="info-value"><strong>{{ b.quantity }}</strong> unidade(s)</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Cadastrado em</div>
+        <div class="info-value">{{ b.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div>
+      <div class="info-label">Descrição</div>
+      <p class="description">{{ b.description }}</p>
+    </div>
+  </div>
+
+  <app-modal
+    [open]="confirmingDelete()"
+    title="Excluir exemplar"
+    confirmLabel="Excluir definitivamente"
+    [danger]="true"
+    [loading]="deleting()"
+    (confirm)="confirmDelete()"
+    (cancel)="confirmingDelete.set(false)"
+  >
+    <p>
+      Tem certeza que deseja excluir <strong>{{ b.title }}</strong>?
+    </p>
+    <p class="text-muted mt-2">
+      Esta ação é permanente. O exemplar não poderá ser excluído se houver locações ativas.
+    </p>
+  </app-modal>
+}

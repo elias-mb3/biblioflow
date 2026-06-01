@@ -1,0 +1,111 @@
+@if (loading()) {
+  <app-spinner label="Carregando locação…" />
+} @else if (rental(); as r) {
+  <div class="page-header">
+    <div>
+      <h1>Locação #{{ r.id.substring(0, 8) }}</h1>
+      <p>
+        @if (r.status === 'ACTIVE') {
+          <span class="badge badge--active">Ativa</span>
+        } @else {
+          <span class="badge badge--finalized">Finalizada</span>
+        }
+        @if (r.late) {
+          <span class="badge badge--late" style="margin-left: var(--space-2);">Atrasada</span>
+        }
+      </p>
+    </div>
+    <div class="header-actions">
+      <a class="btn btn--ghost" routerLink="/admin/locacoes">← Voltar</a>
+      @if (r.status === 'ACTIVE') {
+        <button class="btn btn--primary" type="button" (click)="confirmingFinalize.set(true)">
+          ✓ Finalizar devolução
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (r.late && r.status === 'ACTIVE') {
+    <div class="banner banner--danger mb-4">
+      <strong>Atenção:</strong> esta locação ultrapassou a data prevista de devolução
+      ({{ r.dueDate | date: 'dd/MM/yyyy' }}).
+    </div>
+  }
+
+  <div class="section-card">
+    <h3 class="card-title">Livro</h3>
+    @if (r.book; as book) {
+      <div class="info-row">
+        <div>
+          <strong>{{ book.title }}</strong>
+          <div class="text-muted">{{ book.author }}</div>
+        </div>
+        <span class="badge badge--code">{{ book.registrationCode }}</span>
+      </div>
+      <a
+        class="btn btn--ghost btn--sm mt-2"
+        [routerLink]="['/admin/exemplares', book.id]"
+      >
+        Ver exemplar →
+      </a>
+    } @else {
+      <p class="text-muted">ID do livro: {{ r.bookId }}</p>
+    }
+  </div>
+
+  <div class="section-card">
+    <h3 class="card-title">Usuário</h3>
+    @if (r.user; as u) {
+      <div>
+        <strong>{{ u.fullName }}</strong>
+        <div class="text-muted">{{ u.email ?? u.cpf }}</div>
+      </div>
+    } @else {
+      <p class="text-muted">ID do usuário: {{ r.userId }}</p>
+    }
+  </div>
+
+  <div class="section-card">
+    <h3 class="card-title">Datas</h3>
+    <div class="info-grid">
+      <div>
+        <div class="info-label">Início</div>
+        <div>{{ r.startDate | date: 'dd/MM/yyyy' }}</div>
+      </div>
+      <div>
+        <div class="info-label">Período</div>
+        <div>{{ r.periodDays }} dias</div>
+      </div>
+      <div>
+        <div class="info-label">Prevista p/</div>
+        <div [class.is-late]="r.late">{{ r.dueDate | date: 'dd/MM/yyyy' }}</div>
+      </div>
+      <div>
+        <div class="info-label">Devolução</div>
+        <div>
+          @if (r.returnDate) {
+            {{ r.returnDate | date: 'dd/MM/yyyy HH:mm' }}
+          } @else {
+            <span class="text-muted">—</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-modal
+    [open]="confirmingFinalize()"
+    title="Finalizar devolução"
+    confirmLabel="Confirmar devolução"
+    [loading]="finalizing()"
+    (confirm)="confirmFinalize()"
+    (cancel)="confirmingFinalize.set(false)"
+  >
+    <p>Confirma o recebimento do livro <strong>{{ r.book?.title ?? r.bookId }}</strong>?</p>
+    @if (r.late) {
+      <p class="text-muted mt-2">
+        Esta devolução está atrasada e será registrada como tal.
+      </p>
+    }
+  </app-modal>
+}

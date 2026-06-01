@@ -1,0 +1,112 @@
+<div class="page-header">
+  <div>
+    <h1>Exemplares</h1>
+    <p>{{ totalItems() }} {{ totalItems() === 1 ? 'livro cadastrado' : 'livros cadastrados' }}</p>
+  </div>
+  <a class="btn btn--primary" routerLink="/admin/exemplares/novo">+ Novo exemplar</a>
+</div>
+
+<div class="table-toolbar">
+  <div class="search-group">
+    <select
+      class="form-control"
+      [ngModel]="searchField()"
+      (ngModelChange)="onFieldChange($event)"
+    >
+      <option value="title">Buscar por título</option>
+      <option value="author">Buscar por autor</option>
+      <option value="registrationCode">Buscar por código</option>
+    </select>
+    <input
+      type="text"
+      class="form-control search"
+      [formControl]="searchControl"
+      placeholder="Digite para buscar…"
+    />
+  </div>
+  @if (searchActive()) {
+    <small class="text-muted">Mostrando resultados de busca</small>
+  }
+</div>
+
+@if (loading()) {
+  <app-spinner label="Carregando exemplares…" />
+} @else if (books().length === 0) {
+  <div class="section-card">
+    <app-empty-state
+      icon="📚"
+      title="Nenhum exemplar encontrado"
+      [message]="searchActive() ? 'Tente outra busca ou cadastre um novo livro.' : 'O acervo está vazio. Cadastre o primeiro exemplar.'"
+    >
+      <a class="btn btn--primary mt-4" routerLink="/admin/exemplares/novo">+ Cadastrar exemplar</a>
+    </app-empty-state>
+  </div>
+} @else {
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Título</th>
+          <th>Autor</th>
+          <th>Quantidade</th>
+          <th class="col-actions">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (book of books(); track book.id) {
+          <tr>
+            <td><span class="badge badge--code">{{ book.registrationCode }}</span></td>
+            <td><strong>{{ book.title }}</strong></td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.quantity }}</td>
+            <td class="col-actions">
+              <a class="btn btn--ghost btn--sm" [routerLink]="['/admin/exemplares', book.id]">
+                Ver
+              </a>
+              <a
+                class="btn btn--secondary btn--sm"
+                [routerLink]="['/admin/exemplares', book.id, 'editar']"
+              >
+                Editar
+              </a>
+              <button class="btn btn--danger btn--sm" type="button" (click)="askDelete(book)">
+                Excluir
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!searchActive()) {
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChange)="loadPage($event)"
+    />
+  }
+}
+
+<app-modal
+  [open]="bookToDelete() !== null"
+  title="Excluir exemplar"
+  confirmLabel="Excluir definitivamente"
+  [danger]="true"
+  [loading]="deleting()"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()"
+>
+  @if (bookToDelete(); as b) {
+    <p>
+      Tem certeza que deseja excluir
+      <strong>{{ b.title }}</strong>
+      ({{ b.registrationCode }})?
+    </p>
+    <p class="text-muted mt-2">
+      Esta ação não pode ser desfeita. O exemplar não poderá ser excluído se houver locações
+      ativas.
+    </p>
+  }
+</app-modal>

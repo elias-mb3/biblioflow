@@ -1,0 +1,17 @@
+<header class="usuario-header">
+  <div class="usuario-header__inner">
+    <a class="brand" routerLink="/usuario/catalogo">BiblioFlow</a>
+    <nav class="nav">
+      <a routerLink="/usuario/catalogo" routerLinkActive="active">Catálogo</a>
+      <a routerLink="/usuario/doacoes" routerLinkActive="active">Doar livro</a>
+    </nav>
+    <div class="user">
+      <span class="user-name">Olá, {{ displayName() }}</span>
+      <button class="btn btn--secondary btn--sm" type="button" (click)="logout()">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main class="usuario-main">
+  <router-outlet />
+</main>

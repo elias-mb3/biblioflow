@@ -1,0 +1,110 @@
+<div class="page-header">
+  <div>
+    <h1>{{ editing() ? 'Editar exemplar' : 'Novo exemplar' }}</h1>
+    <p>
+      {{
+        editing()
+          ? 'Atualize as informações do livro no acervo.'
+          : 'Preencha os dados para adicionar um novo livro ao acervo.'
+      }}
+    </p>
+  </div>
+  <a class="btn btn--ghost" routerLink="/admin/exemplares">← Voltar</a>
+</div>
+
+@if (loading()) {
+  <app-spinner label="Carregando dados…" />
+} @else {
+  <div class="section-card form-card">
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-group">
+        <label for="title">Título <span class="required">*</span></label>
+        <input
+          id="title"
+          type="text"
+          class="form-control"
+          formControlName="title"
+          [class.is-invalid]="fieldInvalid('title')"
+          placeholder="Ex.: O Senhor dos Anéis"
+        />
+        @if (fieldInvalid('title')) {
+          <small class="form-error">Título é obrigatório (mín. 2 caracteres).</small>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="author">Autor <span class="required">*</span></label>
+          <input
+            id="author"
+            type="text"
+            class="form-control"
+            formControlName="author"
+            [class.is-invalid]="fieldInvalid('author')"
+            placeholder="Ex.: J. R. R. Tolkien"
+          />
+          @if (fieldInvalid('author')) {
+            <small class="form-error">Autor é obrigatório.</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">Quantidade em estoque <span class="required">*</span></label>
+          <input
+            id="quantity"
+            type="number"
+            class="form-control"
+            formControlName="quantity"
+            [class.is-invalid]="fieldInvalid('quantity')"
+            min="1"
+          />
+          @if (fieldInvalid('quantity')) {
+            <small class="form-error">Quantidade mínima: 1.</small>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Descrição <span class="required">*</span></label>
+        <textarea
+          id="description"
+          class="form-control"
+          formControlName="description"
+          [class.is-invalid]="fieldInvalid('description')"
+          placeholder="Resumo, edição, observações…"
+          rows="5"
+        ></textarea>
+        @if (fieldInvalid('description')) {
+          <small class="form-error">Descrição é obrigatória (mín. 4 caracteres).</small>
+        }
+      </div>
+
+      @if (!editing()) {
+        <div class="banner banner--info">
+          O <strong>código de registro</strong> será gerado automaticamente pelo sistema após o
+          cadastro.
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="banner banner--danger mt-4">
+          <div>{{ errorMessage() }}</div>
+          @if (fieldErrors().length > 0) {
+            <ul class="mt-2">
+              @for (d of fieldErrors(); track d) {
+                <li>{{ d }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
+
+      <div class="form-actions">
+        <a class="btn btn--ghost" routerLink="/admin/exemplares">Cancelar</a>
+        <button type="submit" class="btn btn--primary" [disabled]="saving()">
+          {{ saving() ? 'Salvando…' : editing() ? 'Salvar alterações' : 'Cadastrar exemplar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

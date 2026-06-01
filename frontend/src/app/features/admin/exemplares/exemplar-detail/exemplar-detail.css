@@ -1,0 +1,37 @@
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-5);
+}
+
+.info-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-500);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.info-value {
+  font-size: var(--text-base);
+  color: var(--color-neutral-800);
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid var(--color-neutral-200);
+  margin: var(--space-6) 0;
+}
+
+.description {
+  font-size: var(--text-base);
+  color: var(--color-neutral-700);
+  white-space: pre-wrap;
+  line-height: 1.7;
+}

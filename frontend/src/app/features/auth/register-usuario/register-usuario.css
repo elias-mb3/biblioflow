@@ -1,0 +1,8 @@
+.auth-card--wide {
+  max-width: 560px;
+}
+
+.banner ul {
+  padding-left: var(--space-5);
+  list-style: disc;
+}

@@ -1,0 +1,65 @@
+<div class="page-header">
+  <div>
+    <h1>⚠ Locações pendentes</h1>
+    <p>
+      Locações ativas com data prevista vencida — ordenadas pela mais antiga.
+    </p>
+  </div>
+  <button class="btn btn--secondary" type="button" (click)="load()" [disabled]="loading()">
+    Atualizar
+  </button>
+</div>
+
+@if (loading()) {
+  <app-spinner label="Verificando atrasos…" />
+} @else if (rows().length === 0) {
+  <div class="section-card">
+    <app-empty-state
+      icon="✓"
+      title="Nenhuma locação atrasada"
+      message="Todas as devoluções previstas estão em dia. Bom trabalho!"
+    />
+  </div>
+} @else {
+  <div class="banner banner--warning mb-4">
+    <strong>{{ rows().length }}</strong> locação(ões) requerem atenção imediata.
+  </div>
+
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Atraso</th>
+          <th>Livro</th>
+          <th>Usuário</th>
+          <th>Prevista p/</th>
+          <th class="col-actions">Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of rows(); track r.id) {
+          <tr class="row-late">
+            <td>
+              <span class="badge badge--late">{{ r.daysLate }} dia(s)</span>
+            </td>
+            <td>
+              <strong>{{ r.book?.title ?? r.bookId }}</strong>
+              @if (r.book) {
+                <div class="text-muted" style="font-size: var(--text-xs);">
+                  {{ r.book.registrationCode }}
+                </div>
+              }
+            </td>
+            <td>{{ r.user?.fullName ?? r.userId }}</td>
+            <td>{{ r.dueDate | date: 'dd/MM/yyyy' }}</td>
+            <td class="col-actions">
+              <a class="btn btn--primary btn--sm" [routerLink]="['/admin/locacoes', r.id]">
+                Tratar
+              </a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,48 @@
+<div class="page-header">
+  <div>
+    <h1>Catálogo</h1>
+    <p>Explore o acervo da biblioteca comunitária.</p>
+  </div>
+</div>
+
+<div class="search-bar">
+  <input
+    type="search"
+    class="form-control"
+    [formControl]="searchControl"
+    placeholder="Buscar por título…"
+  />
+</div>
+
+@if (loading()) {
+  <app-spinner label="Carregando acervo…" />
+} @else if (books().length === 0) {
+  <app-empty-state
+    icon="📖"
+    title="Nenhum livro encontrado"
+    [message]="searchActive() ? 'Tente outro termo de busca.' : 'O acervo ainda está vazio. Volte em breve!'"
+  />
+} @else {
+  <div class="book-grid">
+    @for (book of books(); track book.id) {
+      <a class="book-card" [routerLink]="['/usuario/catalogo', book.id]">
+        <div class="title">{{ book.title }}</div>
+        <div class="author">{{ book.author }}</div>
+        <div class="footer">
+          <span class="badge badge--code">{{ book.registrationCode }}</span>
+          <span class="text-muted" style="font-size: var(--text-xs);">
+            {{ book.quantity }} disponível(eis)
+          </span>
+        </div>
+      </a>
+    }
+  </div>
+
+  @if (!searchActive()) {
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChange)="loadPage($event)"
+    />
+  }
+}

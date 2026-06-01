@@ -1,6 +1,7 @@
 services:
   api:
     build: .
+    container_name: biblioflow-api
     ports:
       - "3000:3000"
     env_file:
@@ -8,6 +9,24 @@ services:
     volumes:
       - db-data:/app/data
     restart: unless-stopped
+    networks:
+      - biblioflow
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: biblioflow-web
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - biblioflow
 
 volumes:
   db-data:
+
+networks:
+  biblioflow:
+    driver: bridge

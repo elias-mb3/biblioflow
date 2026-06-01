@@ -1,0 +1,72 @@
+<section class="auth-layout">
+  <div class="auth-card">
+    <div class="brand">
+      <h1>BiblioFlow</h1>
+      <p>Acervo da biblioteca comunitária</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-group">
+        <label for="identifier">
+          E-mail ou CPF
+          <span class="required">*</span>
+        </label>
+        <input
+          id="identifier"
+          type="text"
+          formControlName="identifier"
+          class="form-control"
+          [class.is-invalid]="fieldInvalid('identifier')"
+          placeholder="gestor@biblioflow.com ou 000.000.000-00"
+          autocomplete="username"
+        />
+        <small class="form-error" *ngIf="fieldInvalid('identifier')">
+          Informe seu e-mail (gestor) ou CPF (usuário).
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="password">
+          Senha
+          <span class="required">*</span>
+        </label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="form-control"
+          [class.is-invalid]="fieldInvalid('password')"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+        <small class="form-error" *ngIf="fieldInvalid('password')">
+          A senha deve ter pelo menos 6 caracteres.
+        </small>
+      </div>
+
+      <div class="banner banner--danger mb-4" *ngIf="errorMessage()">
+        {{ errorMessage() }}
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn--primary btn--lg btn--block"
+        [disabled]="loading()"
+      >
+        {{ loading() ? 'Entrando…' : 'Entrar' }}
+      </button>
+    </form>
+
+    <div class="auth-card__footer mt-6 text-center">
+      <p class="text-muted">Ainda não tem conta?</p>
+      <div class="flex gap-3 justify-between mt-2">
+        <a routerLink="/registrar/gestor" class="btn btn--secondary btn--sm btn--block">
+          Cadastrar gestor
+        </a>
+        <a routerLink="/registrar/usuario" class="btn btn--secondary btn--sm btn--block">
+          Cadastrar usuário
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,103 @@
+<div class="page-header">
+  <div>
+    <h1>Meu Perfil</h1>
+    <p>Informações da sua conta de gestor.</p>
+  </div>
+</div>
+
+<div class="section-card">
+  <div class="profile-head">
+    <div class="profile-avatar">{{ initials() }}</div>
+    <div class="profile-meta">
+      @if (auth.user(); as u) {
+        <h2>{{ u.fullName }}</h2>
+        <p>{{ u.email }}</p>
+        <p class="text-muted">{{ u.phone }}</p>
+      } @else {
+        <h2>Sessão ativa</h2>
+        <p class="text-muted">
+          Dados completos do perfil indisponíveis nesta sessão. Faça logout e login novamente
+          para recarregar.
+        </p>
+      }
+      <div class="mt-2">
+        <span class="badge badge--role-manager">{{ auth.role() }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-card">
+  <h3 class="section-title">Sessão atual</h3>
+  <div class="info-grid">
+    <div>
+      <div class="info-label">Identificador (sub)</div>
+      <div class="text-mono">{{ auth.payload()?.sub }}</div>
+    </div>
+    @if (tokenIssuedAt(); as iat) {
+      <div>
+        <div class="info-label">Token emitido em</div>
+        <div>{{ iat | date: 'dd/MM/yyyy HH:mm' }}</div>
+      </div>
+    }
+    @if (tokenExpiresAt(); as exp) {
+      <div>
+        <div class="info-label">Expira em</div>
+        <div>{{ exp | date: 'dd/MM/yyyy HH:mm' }}</div>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="section-card">
+  <h3 class="section-title">Segurança</h3>
+
+  <div class="banner banner--warning mb-4">
+    <strong>Funcionalidade em desenvolvimento.</strong>
+    A alteração de senha requer o endpoint <code>PATCH /auth/me</code> no backend, que ainda
+    não foi implementado. O formulário abaixo está disponível para visualização do layout.
+  </div>
+
+  <form [formGroup]="passwordForm" (ngSubmit)="attemptPasswordChange()" novalidate>
+    <div class="form-group">
+      <label for="currentPassword">Senha atual</label>
+      <input
+        id="currentPassword"
+        type="password"
+        class="form-control"
+        formControlName="currentPassword"
+        autocomplete="current-password"
+      />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="newPassword">Nova senha</label>
+        <input
+          id="newPassword"
+          type="password"
+          class="form-control"
+          formControlName="newPassword"
+          autocomplete="new-password"
+        />
+        <small class="form-help">Mínimo de 6 caracteres.</small>
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar nova senha</label>
+        <input
+          id="confirmPassword"
+          type="password"
+          class="form-control"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+        />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary" [disabled]="passwordForm.invalid">
+        Alterar senha
+      </button>
+    </div>
+  </form>
+</div>

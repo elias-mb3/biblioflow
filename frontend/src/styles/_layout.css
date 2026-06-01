@@ -1,0 +1,98 @@
+.admin-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: var(--header-height) 1fr;
+  min-height: 100vh;
+}
+
+.admin-shell .sidebar {
+  grid-row: 1 / -1;
+  grid-column: 1;
+  background: var(--color-neutral-900);
+  color: var(--color-neutral-100);
+  border-right: 1px solid var(--color-neutral-800);
+}
+
+.admin-shell .header {
+  grid-column: 2;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-neutral-200);
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.admin-shell .main-content {
+  grid-column: 2;
+  padding: var(--space-6) var(--space-8);
+  overflow-y: auto;
+  background: var(--color-neutral-100);
+}
+
+.auth-layout {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background: linear-gradient(135deg, var(--color-neutral-100) 0%, var(--color-primary-light) 100%);
+}
+
+.auth-card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-8);
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-card .brand {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.auth-card .brand h1 {
+  font-size: var(--text-2xl);
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+}
+
+.auth-card .brand p {
+  color: var(--color-neutral-500);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.page-header h1 {
+  font-size: var(--text-2xl);
+  color: var(--color-neutral-900);
+}
+
+.page-header p {
+  color: var(--color-neutral-500);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
+
+.section-card {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-200);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-card + .section-card {
+  margin-top: var(--space-6);
+}

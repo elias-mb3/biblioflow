@@ -1,0 +1,19 @@
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.filter-group label {
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+  font-weight: 500;
+}
+
+.filter-group select {
+  width: 220px;
+}
+
+.row-late {
+  background: rgba(254, 226, 226, 0.35) !important;
+}

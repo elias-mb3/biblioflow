@@ -1,0 +1,15 @@
+.search-group {
+  display: flex;
+  gap: var(--space-2);
+  flex: 1;
+  max-width: 520px;
+}
+
+.search-group select {
+  max-width: 200px;
+  flex: 0 0 auto;
+}
+
+.search-group input {
+  flex: 1;
+}

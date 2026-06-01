@@ -1,0 +1,56 @@
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <strong>BiblioFlow</strong>
+      <span>Painel do Gestor</span>
+    </div>
+
+    <nav class="sidebar__nav">
+      <span class="sidebar__group">Geral</span>
+      <a routerLink="dashboard" routerLinkActive="active" class="sidebar-link">
+        <span class="icon">⌂</span> Dashboard
+      </a>
+
+      <span class="sidebar__group">Acervo</span>
+      <a routerLink="exemplares" routerLinkActive="active" class="sidebar-link">
+        <span class="icon">📚</span> Exemplares
+      </a>
+
+      <span class="sidebar__group">Locações</span>
+      <a routerLink="locacoes" routerLinkActive="active" class="sidebar-link">
+        <span class="icon">↻</span> Todas
+      </a>
+      <a routerLink="locacoes/pendentes" routerLinkActive="active" class="sidebar-link">
+        <span class="icon">⚠</span> Pendentes
+      </a>
+
+      <span class="sidebar__group">Conta</span>
+      <a routerLink="perfil" routerLinkActive="active" class="sidebar-link">
+        <span class="icon">◉</span> Meu Perfil
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <button class="btn btn--ghost btn--block sidebar__logout" type="button" (click)="logout()">
+        Sair
+      </button>
+    </div>
+  </aside>
+
+  <header class="header">
+    <div class="header__title">
+      <h2>Painel Administrativo</h2>
+    </div>
+    <div class="header__user">
+      <div class="avatar">{{ initials() }}</div>
+      <div class="header__user-info">
+        <small>Sessão ativa</small>
+        <strong>{{ identifier() }}</strong>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <router-outlet />
+  </main>
+</div>

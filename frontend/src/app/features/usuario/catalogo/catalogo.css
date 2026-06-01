@@ -1,0 +1,4 @@
+.search-bar {
+  max-width: 480px;
+  margin-bottom: var(--space-6);
+}
