@@ -1,13 +1,12 @@
-# BiblioFlow API
+# BiblioFlow
 
-> Sistema de gestão de biblioteca comunitária — API REST para digitalização e
-> organização do acervo literário da Igreja Presbiteriana do Brasil (IPB).
+> Sistema completo de gestão de biblioteca comunitária — interface web Angular + API REST para digitalização e organização do acervo literário da Igreja Presbiteriana do Brasil (IPB).
 
 Projeto de extensão universitária **BiblioFlow: Transformação Comunitária**,
 vinculado ao projeto institucional InovaTec do curso de Análise e
 Desenvolvimento de Sistemas (UNASP). O objetivo é democratizar o acesso à
 leitura na comunidade local por meio de uma solução de software livre,
-hospedada em modelo *self-hosted*.
+hospedada em modelo *self-hosted*. O sistema é composto por uma **API REST** (Node.js + Express) e uma **interface web** (Angular 20), ambos containerizados com Docker.
 
 ---
 
@@ -42,6 +41,8 @@ npm run dev
 ```
 
 A API sobe em **http://localhost:3000**.
+
+O frontend sobe em **http://localhost:4200**.
 
 ### 3. Documentação interativa (Swagger UI)
 
@@ -122,6 +123,7 @@ npm test
   - [Fluxo operacional de locação](#fluxo-operacional-de-locação)
 - [Endpoints da API](#endpoints-da-api)
 - [Arquitetura do projeto](#arquitetura-do-projeto)
+- [Documentação técnica](#documentação-técnica)
 - [Como executar](#como-executar)
 - [Variáveis de ambiente](#variáveis-de-ambiente)
 - [Banco de dados](#banco-de-dados)
@@ -136,7 +138,7 @@ npm test
 
 O BiblioFlow permite que uma instituição cadastre seu acervo, controle
 locações (empréstimos) e devoluções, e disponibilize a consulta de livros para
-a comunidade. O escopo deste repositório é a **API REST de backend**.
+a comunidade. O repositório contém a **API REST** (backend) e a **interface web Angular** (frontend).
 
 Necessidades atendidas, por perfil:
 
@@ -152,23 +154,41 @@ Necessidades atendidas, por perfil:
 
 ## Stack técnica
 
-| Camada            | Tecnologia                                          |
-|-------------------|-----------------------------------------------------|
-| Linguagem         | TypeScript                                          |
-| Runtime           | Node.js 20 LTS                                      |
-| Framework HTTP    | Express                                             |
-| Banco de dados    | SQLite (arquivo único, persistido em volume Docker) |
-| Acesso a dados    | Prisma ORM (ou `better-sqlite3` — ver observação)   |
-| Validação         | Zod                                                 |
-| Autenticação      | JWT (`jsonwebtoken`) + `bcrypt` para hash de senha  |
-| Testes            | Vitest + Supertest                                  |
-| Qualidade         | ESLint + Prettier                                   |
-| Containerização   | Docker + Docker Compose                             |
+**Backend:**
+
+| Camada          | Tecnologia                                          |
+|-----------------|-----------------------------------------------------|
+| Linguagem       | TypeScript (strict mode)                            |
+| Runtime         | Node.js 20 LTS                                      |
+| Framework HTTP  | Express 5                                           |
+| Banco de dados  | SQLite (arquivo único, persistido em volume Docker) |
+| ORM             | Prisma 7 + `@prisma/adapter-better-sqlite3`         |
+| Validação       | Zod 4                                               |
+| Autenticação    | JWT (`jsonwebtoken`) + `bcrypt` (10 rounds)         |
+| Testes          | Vitest 4 + Supertest                                |
+| Qualidade       | ESLint 10 + Prettier                                |
+| API Docs        | Swagger UI + OpenAPI 3.0 (`/api-docs`)              |
+
+**Frontend:**
+
+| Camada          | Tecnologia                                          |
+|-----------------|-----------------------------------------------------|
+| Framework       | Angular 20 (componentes standalone)                 |
+| Linguagem       | TypeScript 5.9                                      |
+| Estado          | Angular Signals                                     |
+| Formulários     | Reactive Forms + HttpClient                         |
+| Estilização     | CSS puro — custom properties, sem framework CSS     |
+| Servidor web    | Nginx Alpine (Docker)                               |
+
+**Infraestrutura:**
+
+| Camada          | Tecnologia                                               |
+|-----------------|----------------------------------------------------------|
+| Containerização | Docker + Docker Compose (serviços `api` e `frontend`)    |
 
 > **Observação sobre o banco:** SQLite é um banco em arquivo, não um servidor.
-> Não há container separado de banco. O arquivo `.db` é persistido em um
-> volume Docker para sobreviver a recriações do container da API. O Docker
-> Compose deve subir apenas o serviço da API.
+> Não há container separado. O arquivo `.db` é persistido em um volume Docker
+> para sobreviver a recriações do container da API.
 
 ---
 
@@ -315,27 +335,38 @@ rotas marcadas com 👤 exigem perfil `GESTOR`.
 Organização em camadas, separando rota, regra de negócio e acesso a dados.
 
 ```
-biblioflow-api/
-├── src/
-│   ├── server.ts              # Bootstrap do Express
-│   ├── app.ts                 # Configuração de middlewares e rotas
-│   ├── config/                # Env, constantes, conexão com o banco
-│   ├── routes/                # Definição das rotas por recurso
-│   ├── controllers/           # Recebem a requisição, chamam os services
-│   ├── services/              # Regras de negócio (camada principal)
-│   ├── repositories/          # Acesso ao banco de dados
-│   ├── middlewares/           # Autenticação, tratamento de erros
-│   ├── schemas/               # Schemas de validação (Zod)
-│   ├── types/                 # Tipos e interfaces compartilhados
-│   └── utils/                 # Funções auxiliares (ex: gerar código)
-├── prisma/                    # Schema e migrações (se usar Prisma)
-├── tests/                     # Testes de integração e unitários
-├── data/                      # Arquivo SQLite (montado como volume)
+biblioflow/
+├── src/                           # Backend — API REST
+│   ├── server.ts                  # Bootstrap do Express
+│   ├── app.ts                     # Middlewares e registro de rotas
+│   ├── config/                    # Env, constantes, conexão com o banco
+│   ├── routes/                    # Definição das rotas por recurso
+│   ├── controllers/               # Recebem a requisição, chamam os services
+│   ├── services/                  # Regras de negócio (camada principal)
+│   ├── repositories/              # Acesso ao banco de dados (Prisma)
+│   ├── middlewares/               # Autenticação JWT, validação, erro global
+│   ├── schemas/                   # Schemas Zod por recurso
+│   ├── docs/                      # Spec OpenAPI 3.0 (Swagger UI)
+│   ├── types/                     # Interfaces compartilhadas
+│   └── utils/                     # AppError, gerador de codigoRegistro
+├── frontend/                      # Frontend — Angular SPA
+│   ├── src/app/
+│   │   ├── core/                  # Guards, interceptors, models, services
+│   │   ├── shared/                # Toast, Modal, Pagination, Spinner…
+│   │   └── features/              # Auth, Admin (exemplares, locações), Usuário
+│   ├── src/styles/                # Design system — 10 partials CSS
+│   ├── Dockerfile                 # Build Angular → Nginx Alpine
+│   └── nginx.conf                 # SPA routing (try_files)
+├── docs/                          # Documentação técnica
+│   ├── diagrama-er.md             # Diagrama Entidade-Relacionamento
+│   ├── diagrama-entidades.md      # Diagrama de Entidades (classes)
+│   └── diagrama-sequencia.md      # Diagramas de Sequência
+├── prisma/                        # Schema e migrações
+├── tests/                         # 22 testes de integração (Vitest + Supertest)
+├── data/                          # Arquivo SQLite (montado como volume Docker)
 ├── .env.example
-├── .dockerignore
-├── Dockerfile
-├── docker-compose.yml
-├── tsconfig.json
+├── Dockerfile                     # Backend — build multistágio
+├── docker-compose.yml             # Orquestra os serviços api + frontend
 ├── package.json
 └── README.md
 ```
@@ -347,6 +378,21 @@ Princípios:
 - **Repositories isolam o acesso ao banco** — nenhuma query SQL fora deles.
 - **Validação na borda** — todo corpo de requisição passa por um schema Zod
   antes de chegar ao controller.
+
+---
+
+## Documentação técnica
+
+Os diagramas técnicos do projeto estão em [`docs/`](./docs/):
+
+| Documento | Descrição |
+|---|---|
+| [`docs/guia-usuario.md`](./docs/guia-usuario.md) | Guia prático — como ligar o sistema e usar todas as funcionalidades (não-técnico) |
+| [`docs/diagrama-er.md`](./docs/diagrama-er.md) | Diagrama Entidade-Relacionamento — tabelas, campos, cardinalidades e restrições |
+| [`docs/diagrama-entidades.md`](./docs/diagrama-entidades.md) | Diagrama de Entidades — atributos detalhados de cada modelo com tipos e validações |
+| [`docs/diagrama-sequencia.md`](./docs/diagrama-sequencia.md) | Diagramas de Sequência — 10 fluxos completos (registro, login, CRUD, locação, frontend) |
+
+Os diagramas usam sintaxe **Mermaid**, renderizada nativamente pelo GitHub.
 
 ---
 
