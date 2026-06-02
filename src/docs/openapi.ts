@@ -86,7 +86,10 @@ function paginated(itemRef: string): OpenAPIV3.SchemaObject {
 
 // ── Responses helpers ────────────────────────────────────────────────────────
 
-function jsonResponse(description: string, schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject): OpenAPIV3.ResponseObject {
+function jsonResponse(
+  description: string,
+  schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject,
+): OpenAPIV3.ResponseObject {
   return {
     description,
     content: { 'application/json': { schema } },
@@ -130,6 +133,7 @@ export const openapiSpec: OpenAPIV3.Document = {
   },
   tags: [
     { name: 'Auth', description: 'Registro e login' },
+    { name: 'Usuários', description: 'Gestão de leitores pelo gestor' },
     { name: 'Livros', description: 'Catálogo de livros' },
     { name: 'Locações', description: 'Controle de locações e devoluções' },
     { name: 'Doações', description: 'Registro de doações' },
@@ -141,8 +145,7 @@ export const openapiSpec: OpenAPIV3.Document = {
       post: {
         tags: ['Auth'],
         summary: 'Registrar usuário',
-        description:
-          'Cria um novo usuário. **MANAGER** requer `email`; **USER** requer `cpf`.',
+        description: 'Cria um novo usuário. **MANAGER** requer `email`; **USER** requer `cpf`.',
         requestBody: {
           required: true,
           content: {
@@ -174,7 +177,10 @@ export const openapiSpec: OpenAPIV3.Document = {
         responses: {
           201: jsonResponse('Usuário criado', {
             type: 'object',
-            properties: { message: { type: 'string' }, user: { $ref: '#/components/schemas/User' } },
+            properties: {
+              message: { type: 'string' },
+              user: { $ref: '#/components/schemas/User' },
+            },
           }),
           400: errorResponses[400],
           409: errorResponses[409],
@@ -218,6 +224,78 @@ export const openapiSpec: OpenAPIV3.Document = {
       },
     },
 
+    // ── Users ─────────────────────────────────────────────────────────────
+
+    '/users': {
+      get: {
+        tags: ['Usuários'],
+        summary: '👤 Listar leitores (paginado)',
+        description: 'Lista usuários com perfil USER. Busca opcional por nome ou CPF via `q`.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'q',
+            in: 'query',
+            description: 'Termo de busca por nome ou CPF',
+            schema: { type: 'string', example: 'Ana' },
+          },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+        ],
+        responses: {
+          200: jsonResponse('Lista paginada', paginated('#/components/schemas/User')),
+          401: errorResponses[401],
+          403: errorResponses[403],
+        },
+      },
+      post: {
+        tags: ['Usuários'],
+        summary: '👤 Cadastrar leitor',
+        description: 'Cria um usuário com perfil USER. Não retorna token nem o hash da senha.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['fullName', 'phone', 'cpf', 'password'],
+                properties: {
+                  fullName: { type: 'string', minLength: 2, example: 'Ana Lima' },
+                  phone: { type: 'string', minLength: 8, example: '11987654321' },
+                  cpf: { type: 'string', example: '12345678901' },
+                  password: { type: 'string', minLength: 6, example: 'secret123' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: jsonResponse('Leitor criado', { $ref: '#/components/schemas/User' }),
+          400: errorResponses[400],
+          401: errorResponses[401],
+          403: errorResponses[403],
+          409: errorResponses[409],
+        },
+      },
+    },
+
+    '/users/{id}': {
+      get: {
+        tags: ['Usuários'],
+        summary: '👤 Detalhe do leitor',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        responses: {
+          200: jsonResponse('Usuário', { $ref: '#/components/schemas/User' }),
+          401: errorResponses[401],
+          403: errorResponses[403],
+          404: errorResponses[404],
+        },
+      },
+    },
+
     // ── Books ─────────────────────────────────────────────────────────────
 
     '/books': {
@@ -225,9 +303,7 @@ export const openapiSpec: OpenAPIV3.Document = {
         tags: ['Livros'],
         summary: '🔒 Listar livros (paginado)',
         security: [{ bearerAuth: [] }],
-        parameters: [
-          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
-        ],
+        parameters: [{ name: 'page', in: 'query', schema: { type: 'integer', default: 1 } }],
         responses: {
           200: jsonResponse('Lista paginada', paginated('#/components/schemas/Book')),
           401: errorResponses[401],
@@ -295,7 +371,9 @@ export const openapiSpec: OpenAPIV3.Document = {
         tags: ['Livros'],
         summary: '🔒 Detalhe do livro',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
         responses: {
           200: jsonResponse('Livro', { $ref: '#/components/schemas/Book' }),
           401: errorResponses[401],
@@ -306,7 +384,9 @@ export const openapiSpec: OpenAPIV3.Document = {
         tags: ['Livros'],
         summary: '👤 Atualizar livro',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
         requestBody: {
           content: {
             'application/json': {
@@ -334,7 +414,9 @@ export const openapiSpec: OpenAPIV3.Document = {
         tags: ['Livros'],
         summary: '👤 Remover livro',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
         responses: {
           204: { description: 'Removido com sucesso' },
           401: errorResponses[401],
@@ -405,7 +487,8 @@ export const openapiSpec: OpenAPIV3.Document = {
       get: {
         tags: ['Locações'],
         summary: '👤 Locações com prazo vencido',
-        description: 'Retorna locações `ACTIVE` cuja `dueDate` já passou, ordenadas por prazo crescente.',
+        description:
+          'Retorna locações `ACTIVE` cuja `dueDate` já passou, ordenadas por prazo crescente.',
         security: [{ bearerAuth: [] }],
         responses: {
           200: jsonResponse('Locações pendentes', {
@@ -423,7 +506,9 @@ export const openapiSpec: OpenAPIV3.Document = {
         tags: ['Locações'],
         summary: '👤 Detalhe da locação',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
         responses: {
           200: jsonResponse('Locação com livro e usuário', { $ref: '#/components/schemas/Rental' }),
           401: errorResponses[401],
@@ -441,7 +526,9 @@ export const openapiSpec: OpenAPIV3.Document = {
           'Registra a devolução. Se `returnDate > dueDate`, marca `late = true`. ' +
           'Finalizar uma locação já `FINALIZED` retorna 409.',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
         responses: {
           200: jsonResponse('Locação finalizada', { $ref: '#/components/schemas/Rental' }),
           401: errorResponses[401],

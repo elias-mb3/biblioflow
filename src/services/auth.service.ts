@@ -6,6 +6,10 @@ import { AppError } from '../utils/errors';
 import { env } from '../config/env';
 import { Role } from '../generated/prisma/client';
 
+export function hashPassword(password: string) {
+  return bcrypt.hash(password, 10);
+}
+
 export const authService = {
   async register(input: RegisterInput) {
     if (input.role === 'USER' && input.cpf) {
@@ -18,7 +22,7 @@ export const authService = {
       if (existing) throw new AppError('E-mail já cadastrado', 409);
     }
 
-    const passwordHash = await bcrypt.hash(input.password, 10);
+    const passwordHash = await hashPassword(input.password);
     const user = await userRepository.create({
       role: input.role as Role,
       fullName: input.fullName,
@@ -32,10 +36,9 @@ export const authService = {
   },
 
   async login(input: LoginInput) {
-    const user =
-      input.identifier.includes('@')
-        ? await userRepository.findByEmail(input.identifier)
-        : await userRepository.findByCpf(input.identifier);
+    const user = input.identifier.includes('@')
+      ? await userRepository.findByEmail(input.identifier)
+      : await userRepository.findByCpf(input.identifier);
 
     if (!user) throw new AppError('Credenciais inválidas', 401);
 
