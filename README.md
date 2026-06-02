@@ -445,7 +445,24 @@ Descritas em `.env.example`. Nenhum valor sensível deve ser commitado.
 | `DATABASE_URL`             | Caminho do arquivo SQLite              | `file:./data/biblioflow.db` |
 | `JWT_SECRET`               | Segredo para assinar os tokens JWT     | *(gerar valor aleatório)*|
 | `JWT_EXPIRES_IN`           | Validade do token                      | `1d`                     |
-| `LIMITE_LOCACAO_USUARIO`   | Máximo de livros locados por usuário   | `3`                      |
+| `MAX_RENTALS_PER_USER`     | Máximo de livros locados por usuário   | `3`                      |
+| `CORS_ORIGIN`              | Origem permitida pelo CORS (frontend)  | `http://localhost:4200`  |
+| `ALLOW_PUBLIC_MANAGER_BOOTSTRAP` | Permite cadastrar o 1º gestor publicamente | `true`            |
+| `AUTH_RATE_LIMIT_WINDOW_MS`| Janela do rate limit em `/auth` (ms)   | `900000`                 |
+| `AUTH_RATE_LIMIT_MAX`      | Máximo de requisições por janela       | `20`                     |
+
+> **Produção:** com `NODE_ENV=production`, a aplicação **não sobe** se `JWT_SECRET`
+> estiver ausente ou for um valor de exemplo inseguro — defina um segredo aleatório
+> forte (ex.: `openssl rand -hex 32`).
+
+### Segurança
+
+- **Cabeçalhos HTTP** protegidos por [helmet](https://helmetjs.github.io/).
+- **CORS** restrito à origem de `CORS_ORIGIN`.
+- **Rate limiting** nas rotas `/auth` (proteção contra força bruta).
+- **Cadastro de gestor (MANAGER)** restrito: público apenas no *bootstrap* do
+  primeiro gestor; depois disso, novos gestores só podem ser criados por um
+  gestor autenticado (envie o token no header `Authorization`).
 
 ---
 
