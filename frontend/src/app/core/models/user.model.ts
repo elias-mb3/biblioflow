@@ -35,3 +35,10 @@ export interface AuthResponse {
   user: User;
   token: string;
 }
+
+export interface CreateUserRequest {
+  fullName: string;
+  phone: string;
+  cpf: string;
+  password: string;
+}

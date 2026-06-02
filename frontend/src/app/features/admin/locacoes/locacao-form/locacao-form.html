@@ -50,23 +50,44 @@
     </div>
 
     <h3 class="mt-6">2. Usuário</h3>
-    <div class="form-group">
-      <label for="userId">ID do usuário <span class="required">*</span></label>
-      <input
-        id="userId"
-        type="text"
-        class="form-control"
-        formControlName="userId"
-        [class.is-invalid]="fieldInvalid('userId')"
-        placeholder="Cole aqui o UUID do usuário"
-      />
-      @if (fieldInvalid('userId')) {
-        <small class="form-error">Informe um identificador válido.</small>
+    <div class="form-group" style="position: relative;">
+      <label>Buscar usuário por nome ou CPF <span class="required">*</span></label>
+      @if (selectedUser(); as u) {
+        <div class="selected-book">
+          <div>
+            <strong>{{ u.fullName }}</strong>
+            <div class="text-muted" style="font-size: var(--text-xs);">
+              CPF <span class="badge badge--code">{{ u.cpf }}</span> · {{ u.phone }}
+            </div>
+          </div>
+          <button class="btn btn--ghost btn--sm" type="button" (click)="clearUser()">
+            Trocar
+          </button>
+        </div>
+      } @else {
+        <input
+          type="text"
+          class="form-control"
+          [formControl]="userSearch"
+          placeholder="Digite ao menos 2 caracteres…"
+          autocomplete="off"
+        />
+        @if (searchingUser()) {
+          <small class="form-help">Buscando…</small>
+        }
+        @if (userResults().length > 0) {
+          <ul class="autocomplete">
+            @for (u of userResults(); track u.id) {
+              <li>
+                <button type="button" (click)="selectUser(u)">
+                  <strong>{{ u.fullName }}</strong>
+                  <small>CPF {{ u.cpf }} · {{ u.phone }}</small>
+                </button>
+              </li>
+            }
+          </ul>
+        }
       }
-      <small class="form-help">
-        A busca de usuários por nome/CPF ainda não está disponível na API. Por enquanto, informe o
-        UUID retornado no cadastro do usuário.
-      </small>
     </div>
 
     <h3 class="mt-6">3. Período</h3>

@@ -1,0 +1,64 @@
+<div class="page-header">
+  <div>
+    <h1>Usuários</h1>
+    <p>{{ totalItems() }} {{ totalItems() === 1 ? 'leitor cadastrado' : 'leitores cadastrados' }}</p>
+  </div>
+  <a class="btn btn--primary" routerLink="/admin/usuarios/novo">+ Novo usuário</a>
+</div>
+
+<div class="table-toolbar">
+  <div class="search-group">
+    <input
+      type="text"
+      class="form-control search"
+      [formControl]="searchControl"
+      placeholder="Buscar por nome ou CPF…"
+    />
+  </div>
+  @if (searchActive()) {
+    <small class="text-muted">Mostrando resultados de busca</small>
+  }
+</div>
+
+@if (loading()) {
+  <app-spinner label="Carregando usuários…" />
+} @else if (users().length === 0) {
+  <div class="section-card">
+    <app-empty-state
+      icon="👤"
+      title="Nenhum usuário encontrado"
+      [message]="searchActive() ? 'Tente outra busca ou cadastre um novo usuário.' : 'Nenhum leitor cadastrado ainda. Cadastre o primeiro.'"
+    >
+      <a class="btn btn--primary mt-4" routerLink="/admin/usuarios/novo">+ Cadastrar usuário</a>
+    </app-empty-state>
+  </div>
+} @else {
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Telefone</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users(); track user.id) {
+          <tr>
+            <td><strong>{{ user.fullName }}</strong></td>
+            <td><span class="badge badge--code">{{ user.cpf }}</span></td>
+            <td>{{ user.phone }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!searchActive()) {
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChange)="loadPage($event)"
+    />
+  }
+}

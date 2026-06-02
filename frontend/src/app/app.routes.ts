@@ -66,6 +66,18 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./features/admin/usuarios/usuarios-list').then((m) => m.UsuariosListComponent),
+      },
+      {
+        path: 'usuarios/novo',
+        loadComponent: () =>
+          import('./features/admin/usuarios/usuario-form/usuario-form').then(
+            (m) => m.UsuarioFormComponent,
+          ),
+      },
+      {
         path: 'locacoes',
         loadComponent: () =>
           import('./features/admin/locacoes/locacoes-list').then((m) => m.LocacoesListComponent),
