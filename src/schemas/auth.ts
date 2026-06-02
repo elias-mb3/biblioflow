@@ -11,7 +11,11 @@ export const registerSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.role === 'USER' && !data.cpf) {
-      ctx.addIssue({ code: 'custom', path: ['cpf'], message: 'CPF é obrigatório para perfil USER' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['cpf'],
+        message: 'CPF é obrigatório para perfil USER',
+      });
     }
     if (data.role === 'MANAGER' && !data.email) {
       ctx.addIssue({

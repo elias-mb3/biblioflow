@@ -9,7 +9,9 @@ process.env.NODE_ENV = 'test';
 process.env.MAX_RENTALS_PER_USER = '3';
 
 beforeAll(() => {
-  execSync('npx prisma migrate deploy', { env: { ...process.env, DATABASE_URL: `file:${TEST_DB}` } });
+  execSync('npx prisma migrate deploy', {
+    env: { ...process.env, DATABASE_URL: `file:${TEST_DB}` },
+  });
 });
 
 afterAll(() => {

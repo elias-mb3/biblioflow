@@ -31,7 +31,12 @@ describe('POST /api/v1/books', () => {
     const res = await request(app)
       .post('/api/v1/books')
       .set('Authorization', `Bearer ${managerToken}`)
-      .send({ title: 'Book', description: 'Desc', author: 'Author', registrationCode: 'CUSTOM-001' });
+      .send({
+        title: 'Book',
+        description: 'Desc',
+        author: 'Author',
+        registrationCode: 'CUSTOM-001',
+      });
     expect(res.status).toBe(201);
     expect(res.body.registrationCode).not.toBe('CUSTOM-001');
   });

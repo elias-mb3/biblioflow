@@ -15,7 +15,10 @@ export const rentalRepository = {
   findById(id: string) {
     return prisma.rental.findUnique({
       where: { id },
-      include: { book: true, user: { select: { id: true, fullName: true, phone: true, cpf: true } } },
+      include: {
+        book: true,
+        user: { select: { id: true, fullName: true, phone: true, cpf: true } },
+      },
     });
   },
 
@@ -25,7 +28,10 @@ export const rentalRepository = {
     const [items, total] = await Promise.all([
       prisma.rental.findMany({
         where,
-        include: { book: { select: { id: true, title: true, registrationCode: true } }, user: { select: { id: true, fullName: true } } },
+        include: {
+          book: { select: { id: true, title: true, registrationCode: true } },
+          user: { select: { id: true, fullName: true } },
+        },
         skip: (page - 1) * PAGE_SIZE,
         take: PAGE_SIZE,
         orderBy: { createdAt: 'desc' },
@@ -41,7 +47,10 @@ export const rentalRepository = {
     const [items, total] = await Promise.all([
       prisma.rental.findMany({
         where,
-        include: { book: { select: { id: true, title: true } }, user: { select: { id: true, fullName: true, phone: true } } },
+        include: {
+          book: { select: { id: true, title: true } },
+          user: { select: { id: true, fullName: true, phone: true } },
+        },
         skip: (page - 1) * PAGE_SIZE,
         take: PAGE_SIZE,
         orderBy: { dueDate: 'asc' },
