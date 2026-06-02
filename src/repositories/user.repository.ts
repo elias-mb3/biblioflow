@@ -46,6 +46,10 @@ export const userRepository = {
     return { items, total, page, pages: Math.ceil(total / PAGE_SIZE) };
   },
 
+  countByRole(role: Role) {
+    return prisma.user.count({ where: { role } });
+  },
+
   create(data: CreateUserData) {
     return prisma.user.create({ data });
   },

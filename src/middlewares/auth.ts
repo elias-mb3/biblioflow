@@ -21,6 +21,22 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
   }
 }
 
+/**
+ * Autenticação opcional: se um Bearer token válido estiver presente, popula
+ * req.user; caso contrário, segue sem erro (rota permanece pública).
+ */
+export function optionalAuthenticate(req: AuthRequest, _res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  if (header?.startsWith('Bearer ')) {
+    try {
+      req.user = jwt.verify(header.slice(7), env.JWT_SECRET) as AuthPayload;
+    } catch {
+      // token inválido/expirado é ignorado em rota opcional
+    }
+  }
+  next();
+}
+
 export function requireRole(role: Role) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (req.user?.role !== role) {

@@ -10,8 +10,34 @@ export function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
 }
 
+/**
+ * Gate de criação de gestor: permitido apenas no bootstrap (nenhum MANAGER
+ * existe ainda e o bootstrap público está habilitado) ou quando a requisição
+ * é feita por um gestor autenticado.
+ */
+async function assertCanRegisterManager(requesterRole?: Role) {
+  if (requesterRole === 'MANAGER') return;
+
+  const managerCount = await userRepository.countByRole('MANAGER');
+  const canBootstrap = managerCount === 0 && env.ALLOW_PUBLIC_MANAGER_BOOTSTRAP;
+  if (!canBootstrap) {
+    throw new AppError(
+      'Cadastro de gestor não permitido. Faça login como gestor para criar novos gestores.',
+      403,
+    );
+  }
+}
+
+export interface RegisterContext {
+  requesterRole?: Role;
+}
+
 export const authService = {
-  async register(input: RegisterInput) {
+  async register(input: RegisterInput, context: RegisterContext = {}) {
+    if (input.role === 'MANAGER') {
+      await assertCanRegisterManager(context.requesterRole);
+    }
+
     if (input.role === 'USER' && input.cpf) {
       const existing = await userRepository.findByCpf(input.cpf);
       if (existing) throw new AppError('CPF já cadastrado', 409);

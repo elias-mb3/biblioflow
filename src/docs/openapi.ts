@@ -145,7 +145,11 @@ export const openapiSpec: OpenAPIV3.Document = {
       post: {
         tags: ['Auth'],
         summary: 'Registrar usuário',
-        description: 'Cria um novo usuário. **MANAGER** requer `email`; **USER** requer `cpf`.',
+        description:
+          'Cria um novo usuário. **MANAGER** requer `email`; **USER** requer `cpf`.\n\n' +
+          'O cadastro de **MANAGER** é restrito: permitido publicamente apenas no ' +
+          'bootstrap (quando ainda não existe nenhum gestor); depois disso, exige um ' +
+          'token de gestor válido no header `Authorization`. Caso contrário, retorna 403.',
         requestBody: {
           required: true,
           content: {
@@ -183,6 +187,7 @@ export const openapiSpec: OpenAPIV3.Document = {
             },
           }),
           400: errorResponses[400],
+          403: errorResponses[403],
           409: errorResponses[409],
         },
       },

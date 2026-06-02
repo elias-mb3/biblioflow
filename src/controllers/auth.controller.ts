@@ -1,11 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/auth.service';
 import { RegisterInput, LoginInput } from '../schemas/auth';
+import { AuthRequest } from '../types';
 
 export const authController = {
-  async register(req: Request, res: Response, next: NextFunction) {
+  async register(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const result = await authService.register(req.body as RegisterInput);
+      const result = await authService.register(req.body as RegisterInput, {
+        requesterRole: req.user?.role,
+      });
       res.status(201).json(result);
     } catch (err) {
       next(err);
