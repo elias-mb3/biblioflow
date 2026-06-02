@@ -63,8 +63,17 @@ describe('POST /api/v1/auth/register', () => {
       email: 'dup@test.com',
       password: 'secret123',
     };
+    // 1º gestor: bootstrap público
     await request(app).post('/api/v1/auth/register').send(body);
-    const res = await request(app).post('/api/v1/auth/register').send(body);
+    // login para obter token de gestor (criação de novos gestores exige auth)
+    const login = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ identifier: 'dup@test.com', password: 'secret123' });
+    // tentar recriar com o mesmo e-mail, agora autenticado, deve dar 409
+    const res = await request(app)
+      .post('/api/v1/auth/register')
+      .set('Authorization', `Bearer ${login.body.token}`)
+      .send(body);
     expect(res.status).toBe(409);
   });
 });
