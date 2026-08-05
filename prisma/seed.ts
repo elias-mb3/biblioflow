@@ -40,6 +40,9 @@ async function main() {
       description: 'O romance de cavalaria mais famoso da literatura universal.',
       author: 'Miguel de Cervantes',
       quantity: 3,
+      isbn: '9788573264227',
+      publisher: 'Editora 34',
+      publishedYear: 2002,
     },
   });
 

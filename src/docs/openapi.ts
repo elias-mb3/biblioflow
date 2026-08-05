@@ -38,7 +38,35 @@ const bookSchema: OpenAPIV3.SchemaObject = {
     description: { type: 'string' },
     author: { type: 'string' },
     quantity: { type: 'integer', minimum: 1 },
+    isbn: { type: 'string', nullable: true, example: '9788535902778' },
+    coverUrl: { type: 'string', nullable: true },
+    publisher: { type: 'string', nullable: true, example: 'Companhia das Letras' },
+    publishedYear: { type: 'integer', nullable: true, example: 2002 },
     createdAt: { type: 'string', format: 'date-time' },
+  },
+};
+
+const bookMetadataSchema: OpenAPIV3.SchemaObject = {
+  type: 'object',
+  description: 'Metadados obtidos de um provedor externo a partir do ISBN.',
+  properties: {
+    isbn: { type: 'string', example: '9788535902778' },
+    title: { type: 'string', example: 'A ditadura envergonhada' },
+    author: { type: 'string', example: 'Elio Gaspari' },
+    description: { type: 'string' },
+    publisher: { type: 'string', example: 'Companhia das Letras' },
+    publishedYear: { type: 'integer', example: 2002 },
+    coverUrl: { type: 'string' },
+    source: { type: 'string', enum: ['openlibrary', 'googlebooks'] },
+    alreadyRegistered: {
+      type: 'boolean',
+      description: 'Indica que o ISBN já existe no acervo.',
+    },
+    existingBookId: {
+      type: 'string',
+      format: 'uuid',
+      description: 'Presente apenas quando alreadyRegistered é true.',
+    },
   },
 };
 
@@ -102,6 +130,8 @@ const errorResponses: Record<string, OpenAPIV3.ResponseObject> = {
   403: jsonResponse('Sem permissão', errorResponse),
   404: jsonResponse('Não encontrado', errorResponse),
   409: jsonResponse('Conflito de negócio', errorResponse),
+  429: jsonResponse('Muitas requisições', errorResponse),
+  503: jsonResponse('Serviço externo indisponível', errorResponse),
 };
 
 // ── Spec ────────────────────────────────────────────────────────────────────
@@ -126,6 +156,7 @@ export const openapiSpec: OpenAPIV3.Document = {
     schemas: {
       User: userSchema,
       Book: bookSchema,
+      BookMetadata: bookMetadataSchema,
       Rental: rentalSchema,
       Donation: donationSchema,
       Error: errorResponse,
@@ -330,6 +361,11 @@ export const openapiSpec: OpenAPIV3.Document = {
                   description: { type: 'string', example: 'Épico de fantasia de Tolkien.' },
                   author: { type: 'string', example: 'J.R.R. Tolkien' },
                   quantity: { type: 'integer', minimum: 1, default: 1 },
+                  isbn: {
+                    type: 'string',
+                    description: 'Opcional. Aceita ISBN-10 ou ISBN-13; é gravado normalizado.',
+                    example: '9788535902778',
+                  },
                 },
               },
             },
@@ -340,6 +376,7 @@ export const openapiSpec: OpenAPIV3.Document = {
           400: errorResponses[400],
           401: errorResponses[401],
           403: errorResponses[403],
+          409: jsonResponse('Já existe um livro cadastrado com este ISBN', errorResponse),
         },
       },
     },
@@ -360,13 +397,88 @@ export const openapiSpec: OpenAPIV3.Document = {
             name: 'field',
             in: 'query',
             description: 'Campo de busca',
-            schema: { type: 'string', enum: ['title', 'author', 'registrationCode'] },
+            schema: { type: 'string', enum: ['title', 'author', 'registrationCode', 'isbn'] },
           },
           { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
         ],
         responses: {
           200: jsonResponse('Resultados', paginated('#/components/schemas/Book')),
           401: errorResponses[401],
+        },
+      },
+    },
+
+    // Declaradas antes de /books/{id} para espelhar a ordem real das rotas.
+    '/books/isbn/{isbn}': {
+      get: {
+        tags: ['Livros'],
+        summary: '👤 Consultar metadados por ISBN (não persiste)',
+        description:
+          'Consulta a Open Library (e o Google Books, se `GOOGLE_BOOKS_API_KEY` estiver configurada). ' +
+          'Aceita ISBN-10 ou ISBN-13, com ou sem hífens. Nada é gravado no acervo.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'isbn',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', example: '9788535902778' },
+          },
+        ],
+        responses: {
+          200: jsonResponse('Metadados encontrados', { $ref: '#/components/schemas/BookMetadata' }),
+          400: jsonResponse('ISBN inválido', errorResponse),
+          401: errorResponses[401],
+          403: errorResponses[403],
+          404: jsonResponse('Livro não encontrado para o ISBN informado', errorResponse),
+          429: errorResponses[429],
+          503: errorResponses[503],
+        },
+      },
+    },
+
+    '/books/isbn': {
+      post: {
+        tags: ['Livros'],
+        summary: '👤 Cadastrar livro a partir do ISBN',
+        description:
+          'Consulta os metadados e cadastra o livro. Se o ISBN já existir no acervo, soma ' +
+          '`quantity` ao estoque e responde 200 em vez de criar um segundo registro.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['isbn'],
+                properties: {
+                  isbn: { type: 'string', example: '9788535902778' },
+                  quantity: { type: 'integer', minimum: 1, default: 1 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: jsonResponse('Estoque incrementado (ISBN já cadastrado)', {
+            allOf: [
+              { $ref: '#/components/schemas/Book' },
+              { type: 'object', properties: { incremented: { type: 'boolean', example: true } } },
+            ],
+          }),
+          201: jsonResponse('Livro criado', {
+            allOf: [
+              { $ref: '#/components/schemas/Book' },
+              { type: 'object', properties: { incremented: { type: 'boolean', example: false } } },
+            ],
+          }),
+          400: jsonResponse('ISBN inválido', errorResponse),
+          401: errorResponses[401],
+          403: errorResponses[403],
+          404: jsonResponse('Livro não encontrado para o ISBN informado', errorResponse),
+          429: errorResponses[429],
+          503: errorResponses[503],
         },
       },
     },

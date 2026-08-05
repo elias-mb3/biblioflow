@@ -40,6 +40,10 @@ model Book {
   description    String
   author         String
   quantity       Int      @default(1)
+  isbn           String?  @unique
+  coverUrl       String?
+  publisher      String?
+  publishedYear  Int?
   createdAt      DateTime @default(now())
 
   rentals   Rental[]

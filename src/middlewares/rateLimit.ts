@@ -23,3 +23,13 @@ export function createRateLimiter(options: Partial<Options> = {}) {
 export const authRateLimiter = createRateLimiter({
   skip: () => env.NODE_ENV === 'test',
 });
+
+/**
+ * Rate limiter das rotas de consulta por ISBN. São as únicas que fazem I/O de
+ * rede para um serviço de terceiro, que pede uso moderado.
+ * Desativado em teste pelo mesmo motivo do limiter de autenticação.
+ */
+export const isbnLookupRateLimiter = createRateLimiter({
+  limit: env.ISBN_LOOKUP_RATE_LIMIT_MAX,
+  skip: () => env.NODE_ENV === 'test',
+});

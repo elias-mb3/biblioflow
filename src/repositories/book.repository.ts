@@ -3,6 +3,14 @@ import { CreateBookInput, UpdateBookInput } from '../schemas/book';
 
 const PAGE_SIZE = 10;
 
+/** Campos vindos do provedor de ISBN não estão em `CreateBookInput` (não vêm do cliente). */
+type CreateBookData = CreateBookInput & {
+  registrationCode: string;
+  coverUrl?: string;
+  publisher?: string;
+  publishedYear?: number;
+};
+
 export const bookRepository = {
   findById(id: string) {
     return prisma.book.findUnique({ where: { id } });
@@ -10,6 +18,10 @@ export const bookRepository = {
 
   findByRegistrationCode(code: string) {
     return prisma.book.findUnique({ where: { registrationCode: code } });
+  },
+
+  findByIsbn(isbn: string) {
+    return prisma.book.findUnique({ where: { isbn } });
   },
 
   async list(page: number) {
@@ -26,21 +38,15 @@ export const bookRepository = {
 
   async search(params: { q?: string; field?: string; page: number }) {
     const { q, field, page } = params;
-    const where = q
-      ? field === 'title'
-        ? { title: { contains: q } }
-        : field === 'author'
-          ? { author: { contains: q } }
-          : field === 'registrationCode'
-            ? { registrationCode: { contains: q } }
-            : {
-                OR: [
-                  { title: { contains: q } },
-                  { author: { contains: q } },
-                  { registrationCode: { contains: q } },
-                ],
-              }
-      : {};
+
+    const SEARCHABLE_FIELDS = ['title', 'author', 'registrationCode', 'isbn'] as const;
+    const target = SEARCHABLE_FIELDS.find((name) => name === field);
+
+    const where = !q
+      ? {}
+      : target
+        ? { [target]: { contains: q } }
+        : { OR: SEARCHABLE_FIELDS.map((name) => ({ [name]: { contains: q } })) };
 
     const [items, total] = await Promise.all([
       prisma.book.findMany({
@@ -54,8 +60,12 @@ export const bookRepository = {
     return { items, total, page, pages: Math.ceil(total / PAGE_SIZE) };
   },
 
-  create(data: CreateBookInput & { registrationCode: string }) {
+  create(data: CreateBookData) {
     return prisma.book.create({ data });
+  },
+
+  incrementQuantity(id: string, by: number) {
+    return prisma.book.update({ where: { id }, data: { quantity: { increment: by } } });
   },
 
   update(id: string, data: UpdateBookInput) {

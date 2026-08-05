@@ -25,6 +25,15 @@ export const env = {
   ALLOW_PUBLIC_MANAGER_BOOTSTRAP: parseBool(process.env.ALLOW_PUBLIC_MANAGER_BOOTSTRAP, true),
   AUTH_RATE_LIMIT_WINDOW_MS: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS ?? '900000', 10),
   AUTH_RATE_LIMIT_MAX: parseInt(process.env.AUTH_RATE_LIMIT_MAX ?? '20', 10),
+
+  // Consulta de metadados por ISBN. Nenhuma é obrigatória: a Open Library não
+  // exige chave, então a feature funciona sem configuração.
+  ISBN_LOOKUP_ENABLED: parseBool(process.env.ISBN_LOOKUP_ENABLED, true),
+  ISBN_LOOKUP_TIMEOUT_MS: parseInt(process.env.ISBN_LOOKUP_TIMEOUT_MS ?? '5000', 10),
+  ISBN_CACHE_TTL_MS: parseInt(process.env.ISBN_CACHE_TTL_MS ?? '86400000', 10),
+  ISBN_NOT_FOUND_CACHE_TTL_MS: parseInt(process.env.ISBN_NOT_FOUND_CACHE_TTL_MS ?? '3600000', 10),
+  ISBN_LOOKUP_RATE_LIMIT_MAX: parseInt(process.env.ISBN_LOOKUP_RATE_LIMIT_MAX ?? '30', 10),
+  GOOGLE_BOOKS_API_KEY: process.env.GOOGLE_BOOKS_API_KEY ?? '',
 };
 
 /**
