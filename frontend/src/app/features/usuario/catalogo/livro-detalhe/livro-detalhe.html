@@ -5,10 +5,20 @@
 
   <div class="section-card mt-4">
     <div class="livro-head">
-      <h1>{{ b.title }}</h1>
-      <p class="text-muted">por <strong>{{ b.author }}</strong></p>
-      <div class="mt-2">
-        <span class="badge badge--code">{{ b.registrationCode }}</span>
+      @if (b.coverUrl) {
+        <img class="livro-capa" [src]="b.coverUrl" [alt]="'Capa de ' + b.title" />
+      }
+      <div>
+        <h1>{{ b.title }}</h1>
+        <p class="text-muted">por <strong>{{ b.author }}</strong></p>
+        @if (b.publisher || b.publishedYear) {
+          <p class="text-muted">
+            {{ b.publisher }}{{ b.publisher && b.publishedYear ? ' · ' : '' }}{{ b.publishedYear }}
+          </p>
+        }
+        <div class="mt-2">
+          <span class="badge badge--code">{{ b.registrationCode }}</span>
+        </div>
       </div>
     </div>
 

@@ -17,6 +17,63 @@
 } @else {
   <div class="section-card form-card">
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="isbn-lookup">
+        <label for="isbn">Buscar por ISBN</label>
+        <p class="form-help">
+          Número de 10 ou 13 dígitos na contracapa do livro, com ou sem hífens. Preenche os
+          campos automaticamente — você pode revisar antes de salvar.
+        </p>
+        <div class="isbn-lookup__row">
+          <input
+            id="isbn"
+            type="text"
+            class="form-control"
+            formControlName="isbn"
+            placeholder="Ex.: 978-85-359-0277-8"
+            autocomplete="off"
+            (keydown.enter)="$event.preventDefault(); lookupIsbn()"
+          />
+          <button
+            type="button"
+            class="btn btn--secondary"
+            [disabled]="lookingUp() || !form.controls.isbn.value.trim()"
+            (click)="lookupIsbn()"
+          >
+            {{ lookingUp() ? 'Buscando…' : 'Buscar dados' }}
+          </button>
+        </div>
+
+        @if (lookupError()) {
+          <div class="banner banner--warning mt-2">{{ lookupError() }}</div>
+        }
+
+        @if (metadata(); as m) {
+          <div class="isbn-result mt-4">
+            @if (m.coverUrl) {
+              <img class="isbn-result__cover" [src]="m.coverUrl" [alt]="'Capa de ' + m.title" />
+            }
+            <div>
+              <strong>{{ m.title }}</strong>
+              <div class="text-muted">{{ m.author }}</div>
+              @if (m.publisher || m.publishedYear) {
+                <small class="text-muted">
+                  {{ m.publisher }}{{ m.publisher && m.publishedYear ? ' · ' : ''
+                  }}{{ m.publishedYear }}
+                </small>
+              }
+              @if (m.alreadyRegistered && m.existingBookId) {
+                <div class="banner banner--warning mt-2">
+                  Este livro já está no acervo.
+                  <a [routerLink]="['/admin/exemplares', m.existingBookId]">Ver exemplar</a>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <hr class="divider" />
+
       <div class="form-group">
         <label for="title">Título <span class="required">*</span></label>
         <input

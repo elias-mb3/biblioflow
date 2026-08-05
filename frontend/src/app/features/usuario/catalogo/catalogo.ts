@@ -51,7 +51,7 @@ export class CatalogoComponent {
             return this.bookService.list(1);
           }
           this.searchActive.set(true);
-          return this.bookService.search({ title: term.trim() });
+          return this.bookService.search({ q: term.trim(), field: 'title' });
         }),
         takeUntil(this.destroy$),
       )

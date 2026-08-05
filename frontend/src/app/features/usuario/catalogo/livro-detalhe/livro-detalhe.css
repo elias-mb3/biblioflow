@@ -1,6 +1,25 @@
+.livro-head {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+
 .livro-head h1 {
   font-size: var(--text-2xl);
   margin-bottom: var(--space-1);
+}
+
+.livro-capa {
+  width: 120px;
+  height: auto;
+  border-radius: var(--radius-sm, 4px);
+  flex-shrink: 0;
+}
+
+@media (max-width: 560px) {
+  .livro-head {
+    flex-direction: column;
+  }
 }
 
 .divider {

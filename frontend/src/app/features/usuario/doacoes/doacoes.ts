@@ -50,7 +50,7 @@ export class DoacoesComponent {
             return [];
           }
           this.searching.set(true);
-          return this.bookService.search({ title: term.trim() });
+          return this.bookService.search({ q: term.trim(), field: 'title' });
         }),
         takeUntil(this.destroy$),
       )

@@ -2,9 +2,14 @@
   <app-spinner label="Carregando exemplar…" />
 } @else if (book(); as b) {
   <div class="page-header">
-    <div>
-      <h1>{{ b.title }}</h1>
-      <p>por <strong>{{ b.author }}</strong></p>
+    <div class="book-heading">
+      @if (b.coverUrl) {
+        <img class="book-cover" [src]="b.coverUrl" [alt]="'Capa de ' + b.title" />
+      }
+      <div>
+        <h1>{{ b.title }}</h1>
+        <p>por <strong>{{ b.author }}</strong></p>
+      </div>
     </div>
     <div class="header-actions">
       <a class="btn btn--ghost" routerLink="/admin/exemplares">← Voltar</a>
@@ -29,6 +34,20 @@
         <div class="info-label">Quantidade em estoque</div>
         <div class="info-value"><strong>{{ b.quantity }}</strong> unidade(s)</div>
       </div>
+      @if (b.isbn) {
+        <div class="info-item">
+          <div class="info-label">ISBN</div>
+          <div class="info-value">{{ b.isbn }}</div>
+        </div>
+      }
+      @if (b.publisher || b.publishedYear) {
+        <div class="info-item">
+          <div class="info-label">Publicação</div>
+          <div class="info-value">
+            {{ b.publisher }}{{ b.publisher && b.publishedYear ? ' · ' : '' }}{{ b.publishedYear }}
+          </div>
+        </div>
+      }
       <div class="info-item">
         <div class="info-label">Cadastrado em</div>
         <div class="info-value">{{ b.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>

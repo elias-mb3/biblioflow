@@ -6,15 +6,18 @@ import { RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs';
 
 import { ApiError } from '../../../core/models/api-error.model';
-import { Book, PaginatedBooks, BookSearchParams } from '../../../core/models/book.model';
+import {
+  Book,
+  PaginatedBooks,
+  BookSearchField,
+  BookSearchParams,
+} from '../../../core/models/book.model';
 import { BookService } from '../../../core/services/book.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state';
 import { ModalComponent } from '../../../shared/components/modal/modal';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner';
-
-type SearchField = 'title' | 'author' | 'registrationCode';
 
 @Component({
   selector: 'app-exemplares-list',
@@ -44,7 +47,7 @@ export class ExemplaresListComponent {
   readonly totalItems = signal(0);
   readonly searchActive = signal(false);
 
-  readonly searchField = signal<SearchField>('title');
+  readonly searchField = signal<BookSearchField>('title');
   readonly searchControl = new FormControl('', { nonNullable: true });
 
   readonly bookToDelete = signal<Book | null>(null);
@@ -62,7 +65,7 @@ export class ExemplaresListComponent {
             return this.bookService.list(1);
           }
           this.searchActive.set(true);
-          const query: BookSearchParams = { [this.searchField()]: term.trim() };
+          const query: BookSearchParams = { q: term.trim(), field: this.searchField() };
           return this.bookService.search(query);
         }),
         takeUntil(this.destroy$),
@@ -101,7 +104,7 @@ export class ExemplaresListComponent {
     this.loading.set(false);
   }
 
-  onFieldChange(field: SearchField): void {
+  onFieldChange(field: BookSearchField): void {
     this.searchField.set(field);
     if (this.searchControl.value.trim()) {
       this.searchControl.setValue(this.searchControl.value, { emitEvent: true });

@@ -5,7 +5,10 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Book,
+  BookFromIsbnResponse,
+  BookMetadata,
   BookSearchParams,
+  CreateBookFromIsbnRequest,
   CreateBookRequest,
   PaginatedBooks,
   UpdateBookRequest,
@@ -22,15 +25,23 @@ export class BookService {
   }
 
   search(query: BookSearchParams, page = 1): Observable<PaginatedBooks> {
-    let params = new HttpParams().set('page', page);
-    if (query.title) params = params.set('title', query.title);
-    if (query.author) params = params.set('author', query.author);
-    if (query.registrationCode) params = params.set('registrationCode', query.registrationCode);
+    let params = new HttpParams().set('page', page).set('q', query.q);
+    if (query.field) params = params.set('field', query.field);
     return this.http.get<PaginatedBooks>(`${this.baseUrl}/search`, { params });
   }
 
   getById(id: string): Observable<Book> {
     return this.http.get<Book>(`${this.baseUrl}/${id}`);
+  }
+
+  /** Consulta os metadados de um ISBN sem cadastrar nada. */
+  lookupByIsbn(isbn: string): Observable<BookMetadata> {
+    return this.http.get<BookMetadata>(`${this.baseUrl}/isbn/${encodeURIComponent(isbn)}`);
+  }
+
+  /** Cadastra pelo ISBN. Soma ao estoque se o livro já existir no acervo. */
+  createFromIsbn(data: CreateBookFromIsbnRequest): Observable<BookFromIsbnResponse> {
+    return this.http.post<BookFromIsbnResponse>(`${this.baseUrl}/isbn`, data);
   }
 
   create(data: CreateBookRequest): Observable<Book> {
