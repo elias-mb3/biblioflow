@@ -2,7 +2,66 @@
 
 ## [Unreleased]
 
-No pending unreleased changes — all work is committed to `prod`.
+### Book registration by ISBN
+
+> Technical plan: [`docs/plans/cadastro-livros-por-isbn.impl.md`](../docs/plans/cadastro-livros-por-isbn.impl.md) · Discovery: [`docs/plans/cadastro-livros-por-isbn.md`](../docs/plans/cadastro-livros-por-isbn.md) · ADRs: [0001](../docs/adr/0001-open-library-como-provedor-primario-de-metadados.md), [0002](../docs/adr/0002-isbn13-normalizado-como-chave-natural.md), [0003](../docs/adr/0003-isbn-duplicado-incrementa-estoque.md), [0004](../docs/adr/0004-descricao-obtida-do-work-com-fallback-sintetizado.md), [0005](../docs/adr/0005-brasilapi-cbl-para-catalogo-brasileiro.md)
+
+**Added**
+
+- `GET /api/v1/books/isbn/{isbn}` (MANAGER) — looks up book metadata by ISBN and returns title,
+  author, description, publisher, year and cover URL without persisting anything. Flags
+  `alreadyRegistered` when the ISBN is already in the collection. Three providers are queried in
+  order — Open Library, BrasilAPI/CBL and Google Books — and the response reports which one
+  answered in the `source` field (ADRs 0001 and 0005).
+- `POST /api/v1/books/isbn` (MANAGER) — looks up and registers the book in one step. Returns `201`
+  for a new title, or `200` with `incremented: true` when the ISBN already exists, adding to the
+  stock count instead of failing (ADR 0003).
+- `Book` fields `isbn`, `coverUrl`, `publisher` and `publishedYear` — all optional; `isbn` is
+  unique and stored as a normalised, hyphen-free ISBN-13 (ADR 0002).
+- Optional `isbn` on `POST /api/v1/books` and `PUT /api/v1/books/{id}`. A duplicate ISBN on the
+  manual path returns `409`.
+- Environment variables `ISBN_LOOKUP_ENABLED`, `ISBN_LOOKUP_TIMEOUT_MS`, `ISBN_CACHE_TTL_MS`,
+  `ISBN_NOT_FOUND_CACHE_TTL_MS`, `ISBN_LOOKUP_RATE_LIMIT_MAX` and `GOOGLE_BOOKS_API_KEY`. **None is
+  required** — neither the Open Library nor BrasilAPI needs an API key, so the feature works with no
+  configuration. Google Books is a third fallback, used only when a key is supplied (ADR 0001).
+- Brazilian editions are covered through BrasilAPI, which serves data from the CBL (the Brazilian
+  ISBN agency). The Open Library does not carry a large share of Brazilian ISBNs (ADR 0005).
+- Manager UI: "Search by ISBN" block on the book form, which pre-fills the editable fields and
+  previews the cover. ISBN and cover are shown on the book detail screens, and ISBN becomes a
+  search option in the collection list.
+
+**Changed**
+
+- `GET /api/v1/books/search` accepts `isbn` as a `field` value, and the unfiltered search now also
+  matches on ISBN.
+
+**Requires a database migration** — `npm run db:migrate`. Purely additive: four nullable columns
+plus a unique index on `isbn`. No backfill and no impact on existing rows.
+
+The lookup requires outbound internet access. Without it, the endpoints return `503` and manual
+registration keeps working unchanged.
+
+### Fixed — book search returned the whole collection
+
+Every book search in the SPA sent `title` / `author` / `registrationCode` query parameters, while
+`GET /api/v1/books/search` reads `q` + `field`. The term never reached the API: `q` arrived
+`undefined`, the repository built an empty `where` clause, and the endpoint answered with the full
+paginated collection. The screens looked like they were searching and silently ignored what the
+user typed.
+
+Four call sites were affected, not just the collection list:
+
+- Manager — collection list (`exemplares`), including its title/author/code selector
+- Manager — book autocomplete on the new rental form (`locacoes/nova`)
+- Reader — catalogue search
+- Reader — book autocomplete on the donation form
+
+`BookSearchParams` is now `{ q, field }`, mirroring the API contract, and the duplicated
+`SearchField` union was replaced by the shared `BookSearchField` type — the duplication is what let
+the two sides drift apart. Search behaviour per screen is unchanged: every one of them is labelled
+"by title" and still searches by title.
+
+`UserService.search` was already correct and was not touched.
 
 ---
 

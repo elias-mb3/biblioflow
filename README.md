@@ -306,6 +306,21 @@ rotas marcadas com 👤 exigem perfil `GESTOR`.
 | POST   | `/livros`             | 👤     | Cadastra um livro (gera `codigoRegistro`)|
 | PUT    | `/livros/:id`         | 👤     | Edita um livro                           |
 | DELETE | `/livros/:id`         | 👤     | Remove um livro                          |
+| GET    | `/books/isbn/:isbn`   | 👤     | Consulta metadados por ISBN (não grava)  |
+| POST   | `/books/isbn`         | 👤     | Cadastra a partir do ISBN                |
+
+> As rotas implementadas usam nomes em inglês (`/books`, `/rentals`, `/users`,
+> `/donations`). A fonte de verdade dos caminhos é o Swagger em `/api-docs`.
+
+**Cadastro por ISBN.** `GET /books/isbn/:isbn` busca título, autor, sinopse, editora,
+ano e capa, sem gravar nada — é o que preenche o formulário do gestor. A consulta
+percorre três provedores em ordem: **Open Library** (traz capa e sinopse),
+**BrasilAPI/CBL** (catálogo de edições brasileiras) e **Google Books** (só quando
+`GOOGLE_BOOKS_API_KEY` está configurada). O primeiro que conhecer o ISBN vence.
+`POST /books/isbn` consulta e cadastra: responde `201` para um título novo, ou `200`
+com `incremented: true` quando o ISBN já existe no acervo, somando ao estoque em vez
+de recusar. Aceita ISBN-10 ou ISBN-13, com ou sem hífens; o valor é gravado
+normalizado como ISBN-13.
 
 ### Locações
 
@@ -450,10 +465,22 @@ Descritas em `.env.example`. Nenhum valor sensível deve ser commitado.
 | `ALLOW_PUBLIC_MANAGER_BOOTSTRAP` | Permite cadastrar o 1º gestor publicamente | `true`            |
 | `AUTH_RATE_LIMIT_WINDOW_MS`| Janela do rate limit em `/auth` (ms)   | `900000`                 |
 | `AUTH_RATE_LIMIT_MAX`      | Máximo de requisições por janela       | `20`                     |
+| `ISBN_LOOKUP_ENABLED`      | Habilita a consulta por ISBN           | `true`                   |
+| `ISBN_LOOKUP_TIMEOUT_MS`   | Timeout da chamada ao provedor externo | `5000`                   |
+| `ISBN_CACHE_TTL_MS`        | TTL do cache de metadados encontrados  | `86400000`               |
+| `ISBN_NOT_FOUND_CACHE_TTL_MS` | TTL do cache de "não encontrado"    | `3600000`                |
+| `ISBN_LOOKUP_RATE_LIMIT_MAX` | Máximo de consultas de ISBN por janela | `30`                   |
+| `GOOGLE_BOOKS_API_KEY`     | **Opcional.** Fallback do Google Books | *(vazio)*                |
 
 > **Produção:** com `NODE_ENV=production`, a aplicação **não sobe** se `JWT_SECRET`
 > estiver ausente ou for um valor de exemplo inseguro — defina um segredo aleatório
 > forte (ex.: `openssl rand -hex 32`).
+
+> **Cadastro por ISBN:** nenhuma variável `ISBN_*` é obrigatória. Nem a Open Library
+> nem a BrasilAPI exigem chave, então a feature funciona sem configuração — basta a
+> API ter acesso de saída à internet. Sem rede, as rotas de consulta respondem `503`
+> e o cadastro manual continua funcionando normalmente. O `GOOGLE_BOOKS_API_KEY` é
+> apenas um terceiro fallback; sem ele, os outros dois provedores dão conta.
 
 ### Segurança
 

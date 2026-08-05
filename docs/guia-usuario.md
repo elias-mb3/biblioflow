@@ -140,6 +140,31 @@ Após salvar, o livro aparecerá na lista de exemplares.
 
 ---
 
+### 4.2.1 Cadastrar um livro pelo ISBN (mais rápido)
+
+O ISBN é o número de 10 ou 13 dígitos impresso perto do código de barras, na contracapa. Em vez de digitar tudo à mão, o sistema pode buscar os dados do livro para você.
+
+1. Na tela **"Novo exemplar"**, use o campo **"Buscar por ISBN"**, no topo do formulário.
+2. Digite o ISBN — pode ser com ou sem hífens, tanto faz (`978-85-359-0277-8` ou `9788535902778`).
+3. Clique em **"Buscar dados"**.
+4. Título, autor e descrição são preenchidos automaticamente, e a capa aparece ao lado quando existe.
+5. **Confira e ajuste o que quiser** — todos os campos continuam editáveis. Informe a quantidade de exemplares.
+6. Clique em **"Cadastrar exemplar"**.
+
+**O que pode acontecer:**
+
+| Situação | O que o sistema faz |
+|---|---|
+| Livro encontrado | Preenche os campos e mostra a capa |
+| **Livro já cadastrado** no acervo | Avisa e oferece um link para o exemplar existente. Se você cadastrar mesmo assim, o sistema **soma** ao estoque em vez de duplicar |
+| ISBN digitado errado | Avisa "ISBN inválido" — confira o número |
+| Livro não encontrado na base | Avisa e você preenche manualmente, como no passo 4.2 |
+| Sem internet no servidor | Avisa que o serviço está indisponível; o cadastro manual continua funcionando |
+
+> A busca consulta três bases públicas e gratuitas, nesta ordem: a **Open Library** (internacional, é a que costuma trazer capa e sinopse), a **Agência Brasileira do ISBN / CBL** (edições nacionais, via BrasilAPI) e o **Google Books**. Livros brasileiros normalmente vêm da CBL — com título, autor, editora e ano, mas geralmente **sem capa e sem sinopse**, então vale escrever uma descrição própria antes de salvar. Se nenhuma das três conhecer o livro, é só preencher à mão. O **código de registro** continua sendo gerado pelo sistema; ele não é o ISBN.
+
+---
+
 ### 4.3 Consultar e editar um livro
 
 **Para consultar:**
